@@ -11,11 +11,23 @@ class GPTHelper:
         """
         self.config = config or GPTConfig()
         
-        # 初始化OpenAI客户端
-        self.client = OpenAI(
-            api_key=self.config.API_KEY,
-            base_url=self.config.BASE_URL
-        )
+        # 尝试最简单的初始化方式
+        try:
+            # 方法1: 只使用api_key
+            self.client = OpenAI(api_key=self.config.API_KEY)
+            print(f"[DEBUG] 成功使用api_key初始化OpenAI客户端")
+        except Exception as e:
+            print(f"[DEBUG] 仅使用api_key初始化失败: {e}")
+            try:
+                # 方法2: 使用关键字参数
+                self.client = OpenAI(**{
+                    'api_key': self.config.API_KEY,
+                    'base_url': self.config.BASE_URL
+                })
+                print(f"[DEBUG] 成功使用关键字参数初始化OpenAI客户端")
+            except Exception as e2:
+                print(f"[DEBUG] 关键字参数初始化也失败: {e2}")
+                raise e2
     
     def summarize_text(
         self, 
@@ -79,4 +91,4 @@ class GPTHelper:
             return response.choices[0].message.content
             
         except Exception as e:
-            return f"对话失败: {str(e)}" 
+            return f"对话失败: {str(e)}"
