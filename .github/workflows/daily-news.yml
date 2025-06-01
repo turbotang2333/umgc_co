@@ -25,6 +25,7 @@ jobs:
     - name: Create .env file
       run: |
         echo "GPT_API_KEY=${{ secrets.GPT_API_KEY }}" > .env
+        echo "GPT_BASE_URL=\"${{ secrets.GPT_BASE_URL }}\"" >> .env
         echo "SMTP_SERVER=\"${{ secrets.SMTP_SERVER }}\"" >> .env
         echo "SMTP_PORT=\"${{ secrets.SMTP_PORT }}\"" >> .env
         echo "SMTP_USERNAME=\"${{ secrets.SMTP_USERNAME }}\"" >> .env

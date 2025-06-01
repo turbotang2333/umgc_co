@@ -7,7 +7,7 @@ class GPTConfig:
     def __init__(self):
         # 基础配置
         self.API_KEY: str = os.getenv('GPT_API_KEY', '')
-        self.BASE_URL: str = "https://api.gptsapi.net/v1"
+        self.BASE_URL: str = os.getenv('GPT_BASE_URL', 'https://api.openai.com/v1')
         
         # 项目特定配置
         self.SYSTEM_RULES: List[str] = [
@@ -26,6 +26,8 @@ class GPTConfig:
         """验证配置是否完整"""
         if not self.API_KEY:
             raise ValueError("请设置GPT_API_KEY环境变量")
+        if not self.BASE_URL:
+            raise ValueError("请设置GPT_BASE_URL环境变量")
         if not self.SYSTEM_RULES:
             raise ValueError("请设置SYSTEM_RULES")
         if not self.MAX_CHARS:
