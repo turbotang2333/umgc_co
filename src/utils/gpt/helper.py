@@ -13,8 +13,8 @@ class GPTHelper:
         
         # 初始化OpenAI客户端
         self.client = OpenAI(
-            base_url=self.config.BASE_URL,
-            api_key=self.config.API_KEY
+            api_key=self.config.API_KEY,
+            base_url=self.config.BASE_URL
         )
     
     def summarize_text(
