@@ -22,6 +22,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
+    - name: Debug OpenAI installation
+      run: |
+        python -c "import openai; print('OpenAI version:', openai.__version__)"
+        python -c "from openai import OpenAI; print('OpenAI client imported successfully')"
+    
     - name: Create .env file
       run: |
         echo "GPT_API_KEY=${{ secrets.GPT_API_KEY }}" > .env
@@ -32,6 +37,35 @@ jobs:
         echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
         echo "SENDER_EMAIL=${{ secrets.SENDER_EMAIL }}" >> .env
         echo "RECEIVER_EMAIL=${{ secrets.RECEIVER_EMAIL }}" >> .env
+    
+    - name: Debug environment variables
+      run: |
+        echo "Environment variables created:"
+        cat .env
+    
+    - name: Test OpenAI client initialization
+      run: |
+        python -c "
+        import os
+        from dotenv import load_dotenv
+        from src.utils.gpt.config import GPTConfig
+        from src.utils.gpt.helper import GPTHelper
+        
+        load_dotenv()
+        print('Testing OpenAI client initialization...')
+        try:
+            config = GPTConfig()
+            print('GPT Config created successfully')
+            print('API Key exists:', bool(config.API_KEY))
+            print('Base URL:', config.BASE_URL)
+            
+            helper = GPTHelper(config)
+            print('GPTHelper created successfully')
+        except Exception as e:
+            print('Error details:')
+            import traceback
+            traceback.print_exc()
+        "
     
     - name: Run news update
       run: python src/main.py all
