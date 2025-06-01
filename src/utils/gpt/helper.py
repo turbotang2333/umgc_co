@@ -23,41 +23,31 @@ class GPTHelper:
         print(f"[DEBUG] 使用的API Key: {api_key_display}")
         print(f"[DEBUG] 使用的Base URL: {self.config.BASE_URL}")
         
-        # 尝试最简单的初始化方式
+        # 尝试使用base_url的初始化方式
         try:
-            # 方法1: 只使用api_key
-            self.client = OpenAI(api_key=self.config.API_KEY)
-            print(f"[DEBUG] 成功使用api_key初始化OpenAI客户端")
+            # 直接使用api_key和base_url参数
+            self.client = OpenAI(
+                api_key=self.config.API_KEY,
+                base_url=self.config.BASE_URL
+            )
+            print(f"[DEBUG] 成功使用api_key和base_url初始化OpenAI客户端")
         except Exception as e:
-            print(f"[DEBUG] 仅使用api_key初始化失败: {e}")
+            print(f"[DEBUG] 使用api_key和base_url初始化失败: {e}")
             try:
-                # 方法2: 使用关键字参数
+                # 方法2: 使用字典方式传参
                 self.client = OpenAI(**{
                     'api_key': self.config.API_KEY,
                     'base_url': self.config.BASE_URL
                 })
-                print(f"[DEBUG] 成功使用关键字参数初始化OpenAI客户端")
+                print(f"[DEBUG] 成功使用字典参数初始化OpenAI客户端")
             except Exception as e2:
-                print(f"[DEBUG] 关键字参数初始化也失败: {e2}")
-                # 方法3: 尝试清除可能的代理环境变量
+                print(f"[DEBUG] 字典参数初始化也失败: {e2}")
+                # 方法3: 只使用api_key（不推荐，会调用官方API）
                 try:
-                    # 临时清除代理环境变量
-                    old_env = {}
-                    proxy_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']
-                    for var in proxy_vars:
-                        if var in os.environ:
-                            old_env[var] = os.environ[var]
-                            del os.environ[var]
-                    
                     self.client = OpenAI(api_key=self.config.API_KEY)
-                    print(f"[DEBUG] 清除代理环境变量后成功初始化")
-                    
-                    # 恢复环境变量
-                    for var, value in old_env.items():
-                        os.environ[var] = value
-                        
+                    print(f"[DEBUG] 警告：只使用api_key初始化，将调用OpenAI官方API")
                 except Exception as e3:
-                    print(f"[DEBUG] 清除代理环境变量后仍失败: {e3}")
+                    print(f"[DEBUG] 所有初始化方法都失败: {e3}")
                     raise e3
     
     def summarize_text(
