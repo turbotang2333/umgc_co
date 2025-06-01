@@ -1,0 +1,82 @@
+from openai import OpenAI
+from typing import Dict, List, Optional
+from .config import GPTConfig
+
+class GPTHelper:
+    def __init__(self, config: Optional[GPTConfig] = None):
+        """初始化GPT助手
+        
+        Args:
+            config: GPT配置对象，如果为None则创建新的配置对象
+        """
+        self.config = config or GPTConfig()
+        
+        # 初始化OpenAI客户端
+        self.client = OpenAI(
+            base_url=self.config.BASE_URL,
+            api_key=self.config.API_KEY
+        )
+    
+    def summarize_text(
+        self, 
+        text: str,
+        system_rules: Optional[List[str]] = None,
+        max_chars: Optional[int] = None
+    ) -> str:
+        """文本总结方法
+        
+        Args:
+            text: 需要总结的文本
+            system_rules: 自定义规则列表，如果为None则使用配置中的规则
+            max_chars: 自定义字符限制，如果为None则使用配置中的限制
+        
+        Returns:
+            str: 总结后的文本
+        """
+        try:
+            rules = system_rules or self.config.SYSTEM_RULES
+            chars_limit = max_chars or self.config.MAX_CHARS
+            
+            system_prompt = "你是一个专业的内容编辑。\n" + "\n".join(rules)
+            
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": text}
+                ]
+            )
+            
+            result = response.choices[0].message.content.strip('"').strip("'")
+            return result.rstrip('。')
+            
+        except Exception as e:
+            return f"总结失败: {str(e)}"
+    
+    def chat(
+        self,
+        messages: List[Dict[str, str]],
+        system_prompt: Optional[str] = None
+    ) -> str:
+        """通用对话方法
+        
+        Args:
+            messages: 对话历史
+            system_prompt: 系统提示词，如果为None则使用默认提示词
+        
+        Returns:
+            str: GPT的回复
+        """
+        try:
+            if system_prompt:
+                messages.insert(0, {"role": "system", "content": system_prompt})
+            
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=messages
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            return f"对话失败: {str(e)}" 

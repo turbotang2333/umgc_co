@@ -1,0 +1,13 @@
+# 排除常见的敏感文件和目录
+.git/
+.DS_Store
+node_modules/
+*.log
+*.key
+*.pem
+*.cert
+secrets.json
+credentials.json
+
+# 但允许.env文件
+!.env 
