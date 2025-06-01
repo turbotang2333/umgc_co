@@ -18,6 +18,11 @@ class GPTHelper:
         print(f"[DEBUG] http_proxy: {os.getenv('http_proxy', 'None')}")
         print(f"[DEBUG] https_proxy: {os.getenv('https_proxy', 'None')}")
         
+        # 显示实际使用的配置（不完整显示敏感信息）
+        api_key_display = f"{self.config.API_KEY[:8]}...{self.config.API_KEY[-4:]}" if self.config.API_KEY else "None"
+        print(f"[DEBUG] 使用的API Key: {api_key_display}")
+        print(f"[DEBUG] 使用的Base URL: {self.config.BASE_URL}")
+        
         # 尝试最简单的初始化方式
         try:
             # 方法1: 只使用api_key
