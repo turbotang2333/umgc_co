@@ -1,57 +1,57 @@
-# RSS Newsletter Generator
+# 中国音乐新闻聚合系统 (UMGC News)
 
-自动获取微信公众号RSS更新，使用AI总结内容并生成HTML格式的新闻简报。支持SQLite数据库存储，便于历史数据检索。
+自动获取音乐行业RSS新闻，使用AI总结内容并生成HTML邮件简报。支持智能通知和历史数据检索。
 
-## 功能特点
+## ✨ 功能特点
 
-- 🔄 自动获取RSS源更新
-- 🤖 使用GPT进行内容总结
-- 📧 生成美观的HTML新闻简报并邮件发送
-- 🗄️ SQLite数据库存储，支持历史数据检索
-- 📅 灵活的日期范围选择
-- 🔍 多维度检索功能
-- ⚙️ 支持自定义配置
-- 🏗️ 可扩展架构，便于添加新的新闻来源
+- 🎵 **音乐行业专注**：聚合腾讯音乐、索尼、华纳、摩登天空等主流音乐媒体
+- 🤖 **AI智能总结**：使用GPT生成25字以内精准摘要，支持标题+字幕双输入
+- 📧 **智能邮件通知**：三种邮件类型（正常新闻/无内容/错误通知）
+- 🗄️ **数据库存储**：SQLite本地存储，支持字幕字段和历史检索
+- ⏰ **自动化运行**：GitHub Actions每日定时抓取
+- 🎯 **灵活时间选择**：支持昨天/过去N天/自定义日期范围
 
-## 项目结构
+## 🏗️ 项目结构
 
 ```
 project/
 ├── src/
-│   ├── config/
-│   │   ├── default/        # 默认配置
-│   │   │   ├── subscriptions.opml  # RSS订阅源配置
-│   │   │   └── gpt_config.json     # GPT配置
-│   │   └── custom/        # 用户自定义配置（可选）
-│   ├── services/          # 核心服务
-│   │   ├── ai.py         # AI总结服务
-│   │   ├── template.py   # HTML模板服务
-│   │   └── database.py   # 数据库服务
-│   ├── sources/          # 新闻来源
-│   │   ├── base.py      # 基类
-│   │   └── rss.py       # RSS实现
-│   ├── managers/         # 管理器
-│   │   └── news_manager.py  # 新闻管理器
-│   ├── utils/           # 工具类
-│   │   ├── gpt/         # GPT工具包
-│   │   └── date_service.py  # 日期处理服务
-│   └── main.py          # 主程序入口
-├── data/                # 数据目录
-│   └── news.db         # SQLite数据库
-└── .github/workflows/   # GitHub Actions定时任务
+│   ├── config/default/
+│   │   └── subscriptions.opml     # RSS订阅源配置
+│   ├── services/
+│   │   ├── ai.py                  # AI总结服务
+│   │   ├── database.py            # 数据库服务  
+│   │   └── template.py            # HTML模板服务
+│   ├── sources/
+│   │   ├── base.py                # 新闻源基类
+│   │   └── rss.py                 # RSS实现
+│   ├── managers/
+│   │   └── news_manager.py        # 新闻管理器
+│   ├── utils/
+│   │   ├── gpt/                   # GPT工具包
+│   │   └── date_service.py        # 日期处理服务
+│   └── main.py                    # 主程序入口
+├── data/
+│   └── news.db                    # SQLite数据库
+└── .github/workflows/
+    └── daily-news.yml             # 定时任务配置
 ```
 
-## 环境要求
+## 🚀 快速开始
 
-- Python 3.7+
-- 见 requirements.txt
-
-## 配置说明
-
-1. 创建 `.env` 文件，包含以下配置：
+### 1. 安装依赖
+```bash
+pip install -r requirements.txt
 ```
-GPT_API_KEY=your-api-key-here
+
+### 2. 配置环境变量
+创建`.env`文件：
+```env
+# AI配置
+GPT_API_KEY=your-api-key
 GPT_BASE_URL=https://api.openai.com/v1
+
+# 邮件配置
 SMTP_SERVER=smtp.163.com
 SMTP_USERNAME=your-email@163.com
 SMTP_PASSWORD=your-password
@@ -59,162 +59,126 @@ SENDER_EMAIL=your-email@163.com
 RECEIVER_EMAIL=receiver@gmail.com
 ```
 
-2. 自定义RSS源（可选）：
-   - 复制 `src/config/default/subscriptions.opml` 到 `src/config/custom/`
-   - 在自定义配置中添加或修改RSS源
-
-## 使用方法
-
-### 基础使用
-
+### 3. 运行
 ```bash
-# 安装依赖
-pip install -r requirements.txt
+# 完整流程（获取→总结→生成HTML→发送邮件）
+python src/main.py all
 
-# 获取昨天的新闻（默认行为，适合定时任务）
+# 获取昨天新闻（默认）
 python src/main.py fetch
 
-# 完整流程：获取、总结、生成HTML、发送邮件
-python src/main.py all
+# 获取过去7天新闻
+python src/main.py all --days 7
 ```
 
-### 日期选择
+## 📋 使用方法
 
+### 基础操作
 ```bash
-# 获取指定日期的新闻
-python src/main.py fetch --date 2025-05-31
-
-# 获取日期范围内的新闻
-python src/main.py fetch --date-range 2025-05-25 2025-05-31
-
-# 获取过去7天的新闻
-python src/main.py fetch --days 7
+# 获取新闻并处理
+python src/main.py all                          # 昨天的新闻
+python src/main.py all --days 7                # 过去7天
+python src/main.py all --date 2024-12-25       # 指定日期
+python src/main.py all --date-range 2024-12-20 2024-12-25  # 日期范围
 ```
 
-### 数据库检索
-
+### 数据查询
 ```bash
-# 查看数据库统计信息
-python src/main.py stats
-
-# 查询指定日期的新闻
-python src/main.py query --query-date 2025-05-31
-
-# 查询日期范围内的新闻
-python src/main.py query --query-range 2025-05-25 2025-05-31
-
-# 搜索包含关键词的新闻
-python src/main.py query --search "草莓音乐节"
-
-# 查询指定来源的新闻
-python src/main.py query --query-source "摩登天空"
-```
-
-### 数据库管理
-
-```bash
-# 清理90天前的旧数据（默认）
-python src/main.py cleanup-db
-
-# 清理30天前的旧数据
-python src/main.py cleanup-db --days-to-keep 30
-
-# 获取新闻但不保存到数据库
-python src/main.py fetch --no-save-db
+python src/main.py stats                        # 数据库统计
+python src/main.py query --search "草莓音乐节"   # 关键词搜索
+python src/main.py query --query-date 2024-12-25           # 指定日期
+python src/main.py query --query-source "摩登天空"         # 指定来源
 ```
 
 ### 分步执行
-
 ```bash
-# 1. 获取新闻
-python src/main.py fetch
-
-# 2. AI总结
-python src/main.py summarize
-
-# 3. 生成HTML
-python src/main.py html
-
-# 4. 发送邮件
-python src/main.py email
-
-# 5. 清理临时文件
-python src/main.py cleanup
+python src/main.py fetch      # 1. 获取新闻
+python src/main.py summarize  # 2. AI总结
+python src/main.py html       # 3. 生成HTML  
+python src/main.py email      # 4. 发送邮件
 ```
 
-## 定时任务
+## ⚙️ GitHub Actions 自动化
 
-项目配置了GitHub Actions定时任务：
-- **时间**: 每天北京时间9点
-- **行为**: 获取前一天的新闻 → AI总结 → 生成HTML → 发送邮件
-- **存储**: 自动保存到数据库，便于后续检索
+### 自动运行
+- **时间**：每天北京时间8点（UTC 0点）
+- **内容**：获取前一天的音乐新闻
+- **通知**：自动发送邮件（有内容/无内容/出错都会通知）
 
-## 数据库结构
+### 手动触发
+在GitHub仓库Actions页面可手动运行，支持三种模式：
+- **默认模式**：获取昨天的新闻
+- **过去N天**：可指定天数（如7天）
+- **日期范围**：可指定开始和结束日期
+
+## 🗃️ 数据库结构
 
 ```sql
 news_items (
-    id TEXT PRIMARY KEY,           -- 唯一标识符
-    source TEXT,                   -- 来源名称
-    source_type TEXT,              -- 来源类型（rss等）
-    title TEXT,                    -- 标题
-    content TEXT,                  -- 内容
-    summary TEXT,                  -- AI总结
-    published DATETIME,            -- 发布时间
-    link TEXT,                     -- 原文链接
-    fetch_date DATE,              -- 获取日期
-    created_at DATETIME,          -- 创建时间
-    raw_data TEXT                 -- 原始数据（JSON）
+    id TEXT PRIMARY KEY,           -- 唯一ID
+    manager_name TEXT,             -- 管理器名称
+    source_type TEXT NOT NULL,     -- 来源类型（rss）
+    source_name TEXT NOT NULL,     -- 来源名称
+    published DATETIME NOT NULL,   -- 发布时间
+    title TEXT NOT NULL,           -- 标题
+    subtitle TEXT,                 -- 字幕/摘要（200字以内）
+    summary TEXT,                  -- AI总结（25字以内）
+    content TEXT NOT NULL,         -- 正文内容
+    link TEXT NOT NULL,            -- 原文链接
+    fetch_timestamp DATETIME,      -- 抓取时间
+    raw_data TEXT                  -- 原始数据JSON
 )
 ```
 
-## 扩展性
+## 📧 邮件通知系统
 
-### 添加新的新闻来源
+系统会根据不同情况发送对应邮件：
 
-1. 继承 `NewsSource` 基类
-2. 实现 `get_news()` 方法
-3. 在 `main.py` 中注册新来源
+### 正常新闻邮件
+- **触发**：成功获取并处理新闻
+- **内容**：完整的HTML新闻简报，包含AI总结
 
-示例：
-```python
-class APISource(NewsSource):
-    def get_news(self, start_date=None, end_date=None):
-        # 实现API数据获取逻辑
-        return news_list
+### 无内容通知邮件  
+- **触发**：指定时间范围内没有新闻
+- **内容**：说明情况和可能原因
 
-# 在main.py中注册
-manager.register_source(APISource())
-```
+### 错误通知邮件
+- **触发**：处理过程中出现错误
+- **内容**：详细错误信息，便于排查问题
 
-### 添加新的RSS源
+## 🎼 音乐新闻源
 
-在 OPML 文件中添加新的 `outline` 节点：
+目前聚合的音乐媒体：
+- 腾讯音乐娱乐集团
+- 索尼音乐娱乐
+- 华纳音乐
+- 摩登天空
+- 太合音乐
+- 滚石唱片
+
+## 🔧 高级配置
+
+### 添加新RSS源
+编辑`src/config/default/subscriptions.opml`：
 ```xml
-<outline 
-    text="订阅源名称" 
-    type="rss" 
-    xmlUrl="RSS源的URL地址" 
-    title="订阅源名称" />
+<outline text="新音乐媒体" type="rss" 
+         xmlUrl="https://example.com/rss" 
+         title="新音乐媒体" />
 ```
 
-## 故障排除
-
-### 常见问题
-
-1. **时区问题**: 所有时间处理都使用UTC时区，确保一致性
-2. **API限制**: 添加了延时机制避免频繁调用
-3. **重复数据**: 数据库自动去重，基于唯一ID
-4. **邮件发送**: 支持多种SMTP连接方式
-
-### 调试模式
-
+### 数据库维护
 ```bash
-# 查看帮助
-python src/main.py --help
+python src/main.py cleanup-db --days-to-keep 30  # 清理30天前数据
+python src/main.py clear-db                      # 清空所有数据
+```
 
-# 查看新闻来源摘要
-python src/main.py summary
+## 📞 技术支持
 
-# 测试获取但不保存到数据库
-python src/main.py fetch --no-save-db --days 1
-``` 
+如遇问题，可查看：
+1. GitHub Actions运行日志
+2. 邮件错误通知内容
+3. 本地运行时的控制台输出
+
+---
+
+**适用场景**：音乐行业从业者、音乐爱好者、娱乐媒体工作者的日常新闻获取需求 
