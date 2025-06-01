@@ -27,11 +27,15 @@ class AISummarizer:
         
         for i, news in enumerate(news_list, 1):
             try:
-                # 使用GPT总结内容
-                summary = self.gpt.summarize_text(news['content'])
+                # 使用GPT总结标题和副标题
+                title = news['title']
+                subtitle = news.get('subtitle', '')
+                summary = self.gpt.summarize_text(title, subtitle)
                 news['summary'] = summary
                 print(f"总结进度: {i}/{total}")
-                print(f"原文: {news['title']}")
+                print(f"原标题: {title}")
+                if subtitle:
+                    print(f"副标题: {subtitle}")
                 print(f"总结: {summary}")
                 
                 # 添加延时避免API调用过于频繁

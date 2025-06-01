@@ -131,9 +131,9 @@ class HTMLTemplate:
             f'<div style="{self.styles["container"]}">']
         
         # 按来源分组并排序
-        sorted_news = sorted(news_list, key=lambda x: (x['source'], x['published']), reverse=True)
+        sorted_news = sorted(news_list, key=lambda x: (x['source_name'], x['published']), reverse=True)
         grouped_news = {}
-        for source, items in groupby(sorted_news, key=lambda x: x['source']):
+        for source, items in groupby(sorted_news, key=lambda x: x['source_name']):
             grouped_news[source] = list(items)
         
         # 添加每个来源的卡片

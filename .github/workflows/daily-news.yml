@@ -2,8 +2,31 @@ name: Daily News Update
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # 每天北京时间9点运行（UTC+8）
+    - cron: '0 0 * * *'  # 每天北京时间8点运行（UTC+8）
   workflow_dispatch:      # 允许手动触发
+    inputs:
+      time_mode:
+        description: '时间模式选择'
+        required: false
+        default: 'default'
+        type: choice
+        options:
+        - default     # 默认：获取昨天
+        - past_days   # 获取过去N天
+        - date_range  # 指定日期范围
+      days:
+        description: '获取过去几天的新闻（当选择past_days时）'
+        required: false
+        default: '7'
+        type: string
+      start_date:
+        description: '开始日期 (YYYY-MM-DD，当选择date_range时)'
+        required: false
+        type: string
+      end_date:
+        description: '结束日期 (YYYY-MM-DD，当选择date_range时)'
+        required: false
+        type: string
 
 jobs:
   update-news:
@@ -67,8 +90,22 @@ jobs:
             traceback.print_exc()
         "
     
+    - name: Determine command arguments
+      id: cmd_args
+      run: |
+        if [ "${{ github.event.inputs.time_mode }}" = "past_days" ]; then
+          echo "args=all --days ${{ github.event.inputs.days }}" >> $GITHUB_OUTPUT
+          echo "使用过去 ${{ github.event.inputs.days }} 天模式"
+        elif [ "${{ github.event.inputs.time_mode }}" = "date_range" ]; then
+          echo "args=all --date-range ${{ github.event.inputs.start_date }} ${{ github.event.inputs.end_date }}" >> $GITHUB_OUTPUT
+          echo "使用日期范围模式: ${{ github.event.inputs.start_date }} 到 ${{ github.event.inputs.end_date }}"
+        else
+          echo "args=all" >> $GITHUB_OUTPUT
+          echo "使用默认模式（获取昨天的新闻）"
+        fi
+    
     - name: Run news update
-      run: python src/main.py all
+      run: python src/main.py ${{ steps.cmd_args.outputs.args }}
       
     - name: Cleanup
       run: python src/main.py cleanup 

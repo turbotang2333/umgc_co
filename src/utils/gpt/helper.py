@@ -52,14 +52,16 @@ class GPTHelper:
     
     def summarize_text(
         self, 
-        text: str,
+        title: str,
+        subtitle: str = "",
         system_rules: Optional[List[str]] = None,
         max_chars: Optional[int] = None
     ) -> str:
         """文本总结方法
         
         Args:
-            text: 需要总结的文本
+            title: 新闻标题
+            subtitle: 新闻副标题（可选）
             system_rules: 自定义规则列表，如果为None则使用配置中的规则
             max_chars: 自定义字符限制，如果为None则使用配置中的限制
         
@@ -70,18 +72,57 @@ class GPTHelper:
             rules = system_rules or self.config.SYSTEM_RULES
             chars_limit = max_chars or self.config.MAX_CHARS
             
-            system_prompt = "你是一个专业的内容编辑。\n" + "\n".join(rules)
+            # 构建系统提示词
+            system_prompt = "\n".join(rules)
+            
+            # 构建用户输入，包含标题和副标题
+            user_input = f"标题：{title}"
+            if subtitle and subtitle.strip():
+                user_input += f"\n副标题：{subtitle}"
             
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": text}
+                    {"role": "user", "content": user_input}
                 ]
             )
             
-            result = response.choices[0].message.content.strip('"').strip("'")
-            return result.rstrip('。')
+            if not response.choices or len(response.choices) == 0:
+                return "总结失败: API未返回任何选择"
+            
+            result = response.choices[0].message.content
+            
+            if result is None:
+                return "总结失败: API返回内容为None"
+            
+            if result.strip() == "":
+                return "总结失败: API返回空内容"
+            
+            result = result.strip('"').strip("'")
+            result = result.rstrip('。')
+            
+            # 后处理：确保单行输出
+            # 移除所有换行符，只保留第一行
+            result = result.split('\n')[0].strip()
+            
+            # 智能长度控制：只在明显超长时进行截断
+            if len(result) > chars_limit + 10:  # 增加容错空间到10字符
+                # 尝试在合适的位置截断，避免破坏书名号等
+                last_book_end = result.rfind('》')
+                if last_book_end != -1 and last_book_end <= chars_limit + 15:  # 进一步增加容错空间
+                    # 如果最后一个书名号结束在合理范围内，截断到那里
+                    result = result[:last_book_end + 1]
+                else:
+                    # 查找倒数第二个书名号
+                    second_last_book_end = result.rfind('》', 0, last_book_end)
+                    if second_last_book_end != -1 and second_last_book_end <= chars_limit + 5:
+                        result = result[:second_last_book_end + 1]
+                    else:
+                        # 最后方案：简单截断到限制长度+5
+                        result = result[:chars_limit + 5]
+            
+            return result
             
         except Exception as e:
             return f"总结失败: {str(e)}"
@@ -105,7 +146,7 @@ class GPTHelper:
                 messages.insert(0, {"role": "system", "content": system_prompt})
             
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=messages
             )
             
