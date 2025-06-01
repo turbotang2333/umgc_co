@@ -1,6 +1,7 @@
 from openai import OpenAI
 from typing import Dict, List, Optional
 from .config import GPTConfig
+import os
 
 class GPTHelper:
     def __init__(self, config: Optional[GPTConfig] = None):
@@ -10,6 +11,12 @@ class GPTHelper:
             config: GPT配置对象，如果为None则创建新的配置对象
         """
         self.config = config or GPTConfig()
+        
+        # 检查环境变量，看是否有代理相关配置
+        print(f"[DEBUG] HTTP_PROXY: {os.getenv('HTTP_PROXY', 'None')}")
+        print(f"[DEBUG] HTTPS_PROXY: {os.getenv('HTTPS_PROXY', 'None')}")
+        print(f"[DEBUG] http_proxy: {os.getenv('http_proxy', 'None')}")
+        print(f"[DEBUG] https_proxy: {os.getenv('https_proxy', 'None')}")
         
         # 尝试最简单的初始化方式
         try:
@@ -27,7 +34,26 @@ class GPTHelper:
                 print(f"[DEBUG] 成功使用关键字参数初始化OpenAI客户端")
             except Exception as e2:
                 print(f"[DEBUG] 关键字参数初始化也失败: {e2}")
-                raise e2
+                # 方法3: 尝试清除可能的代理环境变量
+                try:
+                    # 临时清除代理环境变量
+                    old_env = {}
+                    proxy_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy']
+                    for var in proxy_vars:
+                        if var in os.environ:
+                            old_env[var] = os.environ[var]
+                            del os.environ[var]
+                    
+                    self.client = OpenAI(api_key=self.config.API_KEY)
+                    print(f"[DEBUG] 清除代理环境变量后成功初始化")
+                    
+                    # 恢复环境变量
+                    for var, value in old_env.items():
+                        os.environ[var] = value
+                        
+                except Exception as e3:
+                    print(f"[DEBUG] 清除代理环境变量后仍失败: {e3}")
+                    raise e3
     
     def summarize_text(
         self, 
